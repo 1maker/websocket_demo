@@ -34,5 +34,4 @@ let listen_id = http.listen(8989, () => {
 });
 
 
-//res.sendFile(__dirname.slice(0, __dirname.lastIndexOf('\\'))+ '\\public\\index.html');
 
