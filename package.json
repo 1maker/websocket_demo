@@ -1,0 +1,41 @@
+{
+  "name": "websocket_server_demo",
+  "version": "1.0.0",
+  "description": "Демонстрация работы протокола Websocket",
+  "main": "web_socket_server.js",
+  "dependencies": {
+    "express": "^4.17.1",
+    "express-session": "^1.17.1",
+    "uuid": "^8.1.0",
+    "ws": "^7.3.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/1maker/hello-world.git"
+  },
+  "keywords": [
+    "Demo",
+    "Websocket",
+    "PI21",
+    "almost",
+    "the",
+    "best",
+    "стильно",
+    "модно",
+    "молодёжно"
+  ],
+  "author": "Shayakhmetov Airat Irekovich",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/1maker/hello-world/issues"
+  },
+  "homepage": "https://github.com/1maker/hello-world#readme",
+  "optionalDependencies": {
+    "bufferutil": "^4.0.1",
+    "utf-8-validate": "^5.0.2"
+  }
+}
