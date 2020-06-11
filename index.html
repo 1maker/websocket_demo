@@ -7,7 +7,7 @@
 	
 		canvas {
 			
-			background-color: #b6e7ff; /* Pale blue.*/
+			outline: 2px dashed #b6e7ff; /* Pale blue.*/
 		}
 	
 	</style>
@@ -15,8 +15,7 @@
 <body>
 	<h2>WebSocket Test</h2>
 	<div id="output"></div>
-	<canvas id="my_canvas" width="680" height="520"></canvas>
-	<div id="coordinates"></div>
+	<canvas id="my_canvas" width="720" height="560"></canvas>
 	<script>
 	'use strict';
   
@@ -24,8 +23,6 @@
 	let websocket;
 	let canvas = document.getElementById("my_canvas");
 	let ctx = canvas.getContext("2d");
-	
-	console.log('canvas.offsetLeft', canvas.offsetLeft, 'canvas.offsetTop', canvas.offsetTop);
 	
 	function init() {
 	
@@ -51,9 +48,26 @@
 	
 		//writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data+" "+websocket.readyState+'</span>');
 		
-		const {x, y, color} = JSON.parse(evt.data);
+		let data = JSON.parse(evt.data);
 		
-		draw_ball(x - canvas.offsetLeft, y - canvas.offsetTop, color);
+		//console.log(data);
+		
+		if (Array.isArray(data)){
+		
+			data.map((item) => {
+			
+				const {x, y, color} = item;
+		
+				draw_ball(x - canvas.offsetLeft, y - canvas.offsetTop, color);
+				
+			});
+			
+		} else {
+		
+			const {x, y, color} = data;
+		
+			draw_ball(x - canvas.offsetLeft, y - canvas.offsetTop, color);
+		}
 		
 		//websocket.close();
 	}
@@ -81,8 +95,11 @@
 	
 		if (e.which === 1){
 		
-			console.log('Нажали левую кнопку мыши');
-			console.log('x = ', e.x, 'y = ', e.y);
+			if (websocket.readyState === 1){
+		
+				do_send(JSON.stringify({x:e.clientX, y:e.clientY}));
+			}
+		
 			canvas.addEventListener("mousemove", mouse_move_handler);
 		}
 	}
@@ -91,17 +108,13 @@
 	
 		if (e.which === 1){
 	
-			console.log('Отпустили левую кнопку мыши');
-			console.log('x = ', e.x, 'y = ', e.y);
 			canvas.removeEventListener('mousemove', mouse_move_handler);
 		}
 	}
-
+		
 	function mouse_move_handler(e) {
 		
-		document.querySelector('#coordinates').innerHTML = 'x = '+e.clientX+', y = '+e.clientY;
-		
-		if (websocket.readyState === 1){
+		if (websocket.readyState === 1) {
 		
 			do_send(JSON.stringify({x:e.clientX, y:e.clientY}));
 		}
@@ -113,7 +126,7 @@
 	function draw_ball(x, y, color) {
 	
 		ctx.beginPath();
-		ctx.arc(x, y, 8, 0, Math.PI*2);
+		ctx.arc(x, y, 3, 0, Math.PI*2);
 		ctx.fillStyle = color;
 		ctx.fill();
 		ctx.closePath();

@@ -1,4 +1,4 @@
-const session = require('express-session');
+const uuid = require('uuid');
 const express = require('express');
 const app = express();
 const http = require('http')
@@ -13,7 +13,8 @@ const colors = [
 	{'pure_yellow':'#ccff00'}
 ];
 
-let matching = {};	// объект сопоставления цветов и подключенных клиентов
+const matching = {};	// объект сопоставления цветов и подключенных клиентов
+const hashes = {};
 
 function random_key_in_colors_array(min, max) {
   
@@ -38,23 +39,59 @@ server.on('upgrade', function(request, socket, head) {
 		matching[request.headers['sec-websocket-key']] = Object.values(colors[random_key])[0];
 		
 		ws['colors_colors'] = Object.values(colors[random_key])[0];
-		
-		console.log(matching);
+		ws['socket_socket'] = request.headers['sec-websocket-key'];
 		
 		console.log('Количество подключенных клиентов', wss.clients.size);
+		console.log(matching);
 		
-		//console.log(ws);
+		hashes[request.headers['sec-websocket-key']] = [];
+		
+		let exclude = Object.keys(hashes).filter(elem => elem !== ws['socket_socket']);
+		
+		for (let client of wss.clients) {
+			
+			if (exclude.length !== 0) {
+			
+				for (let i = 0; i < exclude.length; i++){
+					
+					client.send(JSON.stringify(hashes[exclude[i]]));
+				}
+			}
+		}
 		
 		ws.on('message', (coordinates) => {
 		
 			const {x, y} = JSON.parse(coordinates);
 			
-			for (let client of wss.clients){
+			let entries_matching = Object.entries(matching);
+			let socket_id;
+			
+			for (let i = 0; i < entries_matching.length; i++){
 				
-				//console.log(matching.find(item => item === client['colors_colors']));
-				//console.log(JSON.stringify({x, y, color:client['colors_colors']}));
+				if (entries_matching[i][1] === ws['colors_colors']){
 					
-				client.send(JSON.stringify({x, y, color:client['colors_colors']}));
+					socket_id = entries_matching[i][0];
+					
+					break;
+				}
+			}
+			
+			hashes[socket_id].push({x, y, color:ws['colors_colors'], uuid: uuid.v4()});
+			
+			for (let client of wss.clients){
+			
+				let array_hashes = Object.keys(hashes);
+			
+				for (let client of wss.clients){
+					
+					if (array_hashes.length !== 0){
+					
+						for (let i = 0; i < array_hashes.length; i++){
+							
+							client.send(JSON.stringify(hashes[array_hashes[i]]));
+						}
+					}
+				}
 			}
 		});
 		
