@@ -2,71 +2,127 @@
 <html>
 <head>
 	<meta charset="utf-8" />
-	<title>WebSocket Test</title>
-	<script language="javascript" type="text/javascript">
+	<title>WebSocket</title>
+	<style>
+	
+		canvas {
+			
+			background-color: #b6e7ff; /* Pale blue.*/
+		}
+	
+	</style>
+</head>
+<body>
+	<h2>WebSocket Test</h2>
+	<div id="output"></div>
+	<canvas id="my_canvas" width="680" height="520"></canvas>
+	<div id="coordinates"></div>
+	<script>
 	'use strict';
   
-	let wsUri = "ws://localhost:9000/";
 	let output;
 	let websocket;
-  
-	function init()
-	{
+	let canvas = document.getElementById("my_canvas");
+	let ctx = canvas.getContext("2d");
+	
+	console.log('canvas.offsetLeft', canvas.offsetLeft, 'canvas.offsetTop', canvas.offsetTop);
+	
+	function init() {
+	
 		output = document.getElementById("output");
-		testWebSocket();
-	}
-
-	function testWebSocket()
-	{
-		websocket = new WebSocket(wsUri);
+		websocket = new WebSocket('ws://localhost:9000/');
 		websocket.onopen = function(evt) { onOpen(evt) };
 		websocket.onclose = function(evt) { onClose(evt) };
 		websocket.onmessage = function(evt) { onMessage(evt) };
 		websocket.onerror = function(evt) { onError(evt) };
 	}
-  
-	function onOpen(evt)
-	{
-		writeToScreen("CONNECTED "+websocket.readyState);
-		doSend("WebSocket rocks");
+
+	function onOpen(evt) {
+	
+		writeToScreen("CONNECTED: "+websocket.readyState);
 	}
 	
-	function onClose(evt)
-	{
-		writeToScreen("DISCONNECTED "+websocket.readyState);
+	function onClose(evt) {
+	
+		writeToScreen("DISCONNECTED: "+websocket.readyState);
 	}
 	
-	function onMessage(evt)
-	{
-		writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data+" "+websocket.readyState+'</span>');
+	function onMessage(evt) {
+	
+		//writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data+" "+websocket.readyState+'</span>');
+		
+		const {x, y, color} = JSON.parse(evt.data);
+		
+		draw_ball(x - canvas.offsetLeft, y - canvas.offsetTop, color);
+		
 		//websocket.close();
 	}
 	
-	function onError(evt)
-	{
+	function onError(evt) {
+	
 		writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data+" "+websocket.readyState);
 	}
 	
-	function doSend(message)
-	{
-		writeToScreen("SENT: " + message+" "+websocket.readyState);
-		websocket.send(message);
+	function do_send(coordinates) {
+	
+		//writeToScreen("SENT: " + coordinates+" "+websocket.readyState);
+		websocket.send(coordinates);
 	}
 
-	function writeToScreen(message)
-	{
-		var pre = document.createElement("p");
+	function writeToScreen(message) {
+	
+		let pre = document.createElement("p");
 		pre.style.wordWrap = "break-word";
 		pre.innerHTML = message;
 		output.appendChild(pre);
 	}
 
-	window.addEventListener("load", init, false);
+	function mouse_down_handler(e) {
+	
+		if (e.which === 1){
+		
+			console.log('Нажали левую кнопку мыши');
+			console.log('x = ', e.x, 'y = ', e.y);
+			canvas.addEventListener("mousemove", mouse_move_handler);
+		}
+	}
 
+	function mouse_up_handler(e) {
+	
+		if (e.which === 1){
+	
+			console.log('Отпустили левую кнопку мыши');
+			console.log('x = ', e.x, 'y = ', e.y);
+			canvas.removeEventListener('mousemove', mouse_move_handler);
+		}
+	}
+
+	function mouse_move_handler(e) {
+		
+		document.querySelector('#coordinates').innerHTML = 'x = '+e.clientX+', y = '+e.clientY;
+		
+		if (websocket.readyState === 1){
+		
+			do_send(JSON.stringify({x:e.clientX, y:e.clientY}));
+		}
+		
+		//console.log('x clientX = ', e.clientX);
+		//console.log('y clientY = ', e.clientY);
+	}
+	
+	function draw_ball(x, y, color) {
+	
+		ctx.beginPath();
+		ctx.arc(x, y, 8, 0, Math.PI*2);
+		ctx.fillStyle = color;
+		ctx.fill();
+		ctx.closePath();
+	}
+	
+	window.addEventListener("load", init, false);
+	window.addEventListener("mousedown", mouse_down_handler);
+	window.addEventListener("mouseup", mouse_up_handler);
+		
 	</script>
-</head>
-<body>
-	<h2>WebSocket Test</h2>
-	<div id="output"></div>
 </body>
 </html>
